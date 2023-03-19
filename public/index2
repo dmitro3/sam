@@ -1,0 +1,39 @@
+<?
+
+/**
+ * $system_id -your projectID(number)
+ * $version -API version(number)for API request OR callback version(number) for callback call
+ * $args -array with API method OR callback parameters.
+ * API method parameters list you can find in the API method description
+ * $system_key -your APIkey(secret key)
+ **/
+function getSignature($system_id, $version, array $args, $system_key)
+{
+    $md5 = array();
+    $md5[] = $system_id;
+    $md5[] = $version;
+    foreach ($args as $required_arg) {
+        $arg = $required_arg;
+        if (is_array($arg)) {
+            if (count($arg)) {
+                $recursive_arg = '';
+                array_walk_recursive($arg, function ($item) use (&$recursive_arg) {
+                    if (!is_array($item)) {
+                        $recursive_arg .= ($item . ':');
+                    }
+                });
+                $md5[] = substr($recursive_arg, 0, strlen($recursive_arg) - 1); // get rid of last colon-sign
+            } else {
+                $md5[] = '';
+            }
+        } else {
+            $md5[] = $arg;
+        }
+    };
+    $md5[] = $system_key;
+    $md5_str = implode('*', $md5);
+    $md5 = md5($md5_str);
+    return $md5;
+}
+
+return getSignature(1749, 1, [], 'cf4b3758daa8d8fcdca5736ba5279613');
